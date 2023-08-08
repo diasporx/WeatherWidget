@@ -1,41 +1,46 @@
 <template>
   <!--Card-->
   <div class="weatherCard" v-if="weatherData">
-    <div class="headerWidget d-flex align-items-center justify-content-between">
-      <span class="cityName">{{ weatherData.name }}, {{ weatherData.sys.country }}</span>
-      <a href="" class="ico__Settings d-flex align-items-center justify-content-center"><img
-          src='@/assets/icons/settings.svg' alt="settings"></a>
-    </div>
-    <div class="contentWidgetWeather d-flex align-items-center justify-content-start">
-      <img :src="weatherIconPath" alt="weather">
-      <span class="Temperature">{{ Math.round(weatherData.main.temp_max) }}°C</span>
-    </div>
-    <div class="descriptionWeather">
-      <p>Feels like <b>{{ Math.round(weatherData.main.feels_like) }}°C</b>, {{ weatherData.weather[0].description }}
-      </p>
-    </div>
-    <div class="content-columns d-flex justify-content-between">
-      <div class="d-flex flex-column">
-        <div class="group-stat mb-2 d-flex align-items-center">
-          <img class="ico__ArrowWind" src='@/assets/icons/arrow.png' :style="{ transform: `rotate(${arrowRotation}deg)` }" alt="arrow-wind">
-          <span class="light-color fw-normal nowrap ms-2">{{weatherData.wind.speed}}m/s</span>
+    <div class="content-No-Settings" v-if="!this.settings">
+      <div class="headerWidget d-flex align-items-center justify-content-between">
+        <span class="cityName">{{ weatherData.name }}, {{ weatherData.sys.country }}</span>
+        <button @click="this.settings = !this.settings" class="ico__Settings d-flex align-items-center justify-content-center"><img
+            src='@/assets/icons/settings.svg' alt="settings"></button>
+      </div>
+      <div class="contentWidgetWeather d-flex align-items-center justify-content-start">
+        <img :src="weatherIconPath" alt="weather">
+        <span class="Temperature">{{ Math.round(weatherData.main.temp_max) }}°C</span>
+      </div>
+      <div class="descriptionWeather">
+        <p>Feels like <b>{{ Math.round(weatherData.main.feels_like) }}°C</b>, {{ weatherData.weather[0].description }}
+        </p>
+      </div>
+      <div class="content-columns d-flex justify-content-between">
+        <div class="d-flex flex-column">
+          <div class="group-stat mb-2 d-flex align-items-center">
+            <img class="ico__ArrowWind" src='@/assets/icons/arrow.png' :style="{ transform: `rotate(${arrowRotation}deg)` }" alt="arrow-wind">
+            <span class="light-color fw-normal nowrap ms-2">{{weatherData.wind.speed}}m/s</span>
+          </div>
+          <div class="group-stat mb-2 d-flex align-items-center">
+            <span class="light-color fw-normal nowrap">Humidity: {{weatherData.main.humidity}}%</span>
+          </div>
+          <div class="group-stat d-flex align-items-center">
+            <span class="light-color fw-normal nowrap">Visibility: {{Math.round(weatherData.visibility / 1000).toFixed(1)}}km</span>
+          </div>
         </div>
-        <div class="group-stat mb-2 d-flex align-items-center">
-          <span class="light-color fw-normal nowrap">Humidity: {{weatherData.main.humidity}}%</span>
-        </div>
-        <div class="group-stat d-flex align-items-center">
-          <span class="light-color fw-normal nowrap">Visibility: {{Math.round(weatherData.visibility / 1000).toFixed(1)}}km</span>
+        <div class="d-flex flex-column">
+          <div class="group-stat mb-2 d-flex align-items-center">
+            <img class="ico__pressure" src='@/assets/icons/pressure-gauge.png' alt="pressure-gauge">
+            <span class="light-color fw-normal ms-2 nowrap">{{weatherData.main.pressure}}hPa</span>
+          </div>
+          <div class="group-stat mb-2 d-flex align-items-center">
+            <span class="light-color fw-normal nowrap">Dew point: {{weatherData.main.temp_min}}℃</span>
+          </div>
         </div>
       </div>
-      <div class="d-flex flex-column">
-        <div class="group-stat mb-2 d-flex align-items-center">
-          <img class="ico__pressure" src='@/assets/icons/pressure-gauge.png' alt="pressure-gauge">
-          <span class="light-color fw-normal ms-2 nowrap">{{weatherData.main.pressure}}hPa</span>
-        </div>
-        <div class="group-stat mb-2 d-flex align-items-center">
-          <span class="light-color fw-normal nowrap">Dew point: {{weatherData.main.temp_min}}℃</span>
-        </div>
-      </div>
+    </div>
+    <div class="content-Settings" v-else>
+
     </div>
   </div>
   <!--Card-->
@@ -48,6 +53,11 @@ import {mapState, mapActions} from 'vuex';
 import axios from "axios";
 
 export default defineComponent({
+  data() {
+    return {
+      settings: false,
+    }
+  },
   async created() {
     try {
       const response = await axios.get('https://ipapi.co/json/');
@@ -107,8 +117,8 @@ export default defineComponent({
 }
 .weatherCard {
   background: #fff;
+  width: 300px;
   border-radius: 7px;
-  width: min-content;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   padding: 20px;
 

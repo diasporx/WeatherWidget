@@ -17,6 +17,11 @@ export default {
 body {
   font-family: 'Ubuntu', sans-serif;
 }
+button {
+  outline: none;
+  border: none;
+  background: transparent;
+}
 .bg-test {
   background: #6c6c6c;
 }
