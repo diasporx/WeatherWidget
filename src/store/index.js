@@ -47,8 +47,26 @@ export default createStore({
         console.error('Error determining user location:', error);
       }
     },
-    addCity({ commit }, city) {
-      commit('ADD_CITY', city);
+    async addCity({ commit, state, dispatch }, city) {
+      try {
+        if (state.cities.includes(city)) {
+          console.warn('City already exists in the list.');
+          return;
+        }
+
+        const apiKey = 'c20c38c73c2e5f6f0e02ba8b29e0c981';
+        const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
+        const response = await axios.get(apiUrl);
+
+        if (response.data) {
+          commit('ADD_CITY', city);
+          await dispatch('fetchWeatherData', { city });
+        } else {
+          console.error('City not found in OpenWeather API.');
+        }
+      } catch (error) {
+        console.error('Error adding city:', error);
+      }
     },
     removeCity({ commit }, index) {
       commit('REMOVE_CITY', index);

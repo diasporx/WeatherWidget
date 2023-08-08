@@ -1,6 +1,7 @@
 <template>
   <div class="content-Settings-block d-flex flex-column justify-content-center">
-    <div class="header-settings d-flex align-items-center justify-content-between mb-3">
+    <div class="header-settings position-relative d-flex align-items-center justify-content-between mb-3">
+      <p class="error" v-if="this.err !== ''">{{ err }}</p>
       <span class="Title">Settings</span>
       <button @click="this.$emit('close-settings')" class="ico__Close"><img src='@/assets/icons/close.svg' alt="close"></button>
     </div>
@@ -13,9 +14,9 @@
     </draggable>
     <div class="input-group input-group-sm mb-3">
       <div class="input-group-prepend">
-        <button class="btn btn-outline-secondary me-2" type="button">Add</button>
+        <button class="btn btn-outline-secondary me-2" type="button" @click.prevent="addCity(newCity)">Add</button>
       </div>
-      <input type="text" class="form-control" placeholder="Add new city" aria-describedby="Add new city">
+      <input v-model="newCity" type="text" class="form-control" placeholder="Add new city" aria-describedby="Add new city">
     </div>
   </div>
 </template>
@@ -35,6 +36,7 @@ export default defineComponent({
   data() {
     return {
       newCity: '',
+      err: ''
     };
   },
   computed: {
@@ -50,7 +52,11 @@ export default defineComponent({
     },
     addCityToStore(city) {
       if (this.newCity.trim() !== '') {
-        this.addCity(city);
+        this.addCity(city).then((res)=> {
+          if(!res) {
+            this.err = 'City already exists in the list.';
+          }
+        });
         this.newCity = '';
       }
     },
@@ -64,6 +70,11 @@ export default defineComponent({
 <style scoped lang="scss">
 .Title {
   font-weight: 600;
+}
+.header-settings {
+  p.error {
+
+  }
 }
 .content-Settings-block {
   .drag-cities {
