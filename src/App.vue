@@ -1,5 +1,7 @@
 <template>
-  <WeatherWidget />
+  <div class="bg-test d-flex vh-100 align-items-center justify-content-center">
+    <WeatherWidget />
+  </div>
 </template>
 
 <script>
@@ -13,8 +15,13 @@ export default {
 
 <style lang="scss">
 body {
-  background: #d5d5d5;
   font-family: 'Ubuntu', sans-serif;
+}
+.bg-test {
+  background: #6c6c6c;
+}
+.nowrap {
+  white-space: nowrap;
 }
 @font-face {
   font-family: 'Ubuntu';
