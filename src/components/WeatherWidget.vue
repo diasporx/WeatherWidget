@@ -19,7 +19,7 @@
         <div class="d-flex flex-column">
           <div class="group-stat mb-2 d-flex align-items-center">
             <img class="ico__ArrowWind" src='@/assets/icons/arrow.png' :style="{ transform: `rotate(${arrowRotation}deg)` }" alt="arrow-wind">
-            <span class="light-color fw-normal nowrap ms-2">{{weatherData.wind.speed}}m/s</span>
+            <span class="light-color fw-normal nowrap ms-2">{{weatherData.wind.speed}}m/s {{ windDirection }}</span>
           </div>
           <div class="group-stat mb-2 d-flex align-items-center">
             <span class="light-color fw-normal nowrap">Humidity: {{weatherData.main.humidity}}%</span>
@@ -47,7 +47,7 @@
 
 <script>
 import Settings from '@/components/Settings.vue'
-import { defineComponent, watch } from 'vue';
+import { defineComponent } from 'vue';
 import {mapState, mapActions} from 'vuex';
 
 export default defineComponent({
@@ -67,6 +67,13 @@ export default defineComponent({
   },
   computed: {
     ...mapState(['weatherData', 'cities']),
+    windDirection() {
+      if (this.$store.state.weatherData && this.$store.state.weatherData.wind) {
+        const degrees = this.$store.state.weatherData.wind.deg;
+        return this.degToCompass(degrees);
+      }
+      return '';
+    },
     arrowRotation() {
       if (this.$store.state.weatherData && this.$store.state.weatherData.wind) {
         const windDeg = this.$store.state.weatherData.wind.deg;
@@ -88,7 +95,7 @@ export default defineComponent({
           case 'Rain':
             return require('@/assets/weather-images/rainy.svg');
           case 'Drizzle':
-            return require('@/assets/weather-images/light-rainy.svg');
+            return require('@/assets/weather-images/drizzle.svg');
           case 'Snow':
             return require('@/assets/weather-images/snowy.svg');
           default:
@@ -101,6 +108,11 @@ export default defineComponent({
   },
   methods: {
     ...mapActions(['fetchWeatherData', 'initWeatherData']),
+    degToCompass(degrees) {
+      const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+      const index = Math.round((degrees % 360) / 45);
+      return directions[(index % 8)];
+    },
     closeSettingsHandler() {
       this.settings = false;
     },
