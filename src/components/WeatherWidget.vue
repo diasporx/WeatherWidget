@@ -90,6 +90,8 @@ export default defineComponent({
             return require('@/assets/weather-images/cloudy.svg');
           case 'Clear':
             return require('@/assets/weather-images/day.svg');
+          case 'Haze':
+            return require('@/assets/weather-images/haze.svg');
           case 'Thunderstorm':
             return require('@/assets/weather-images/thunder.svg');
           case 'Rain':
@@ -98,6 +100,12 @@ export default defineComponent({
             return require('@/assets/weather-images/drizzle.svg');
           case 'Snow':
             return require('@/assets/weather-images/snowy.svg');
+          case 'Smoke':
+            return require('@/assets/weather-images/smoke.svg');
+          case 'Fog':
+            return require('@/assets/weather-images/fog.svg');
+          case 'Hail':
+            return require('@/assets/weather-images/hail.svg');
           default:
             return require('@/assets/weather-images/cloudy-day.svg');
         }
@@ -165,12 +173,12 @@ export default defineComponent({
   .contentWidgetWeather {
     span.Temperature {
       font-size: 48px;
-      margin-left: -17px;
+      //margin-left: -17px;
       font-weight: 600;
     }
 
     img {
-      width: 150px;
+      width: 135px;
     }
   }
 
