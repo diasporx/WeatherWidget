@@ -1,15 +1,29 @@
-import { createStore } from 'vuex'
+import { createStore } from 'vuex';
 import axios from 'axios';
 
 export default createStore({
   state: {
+    cities: JSON.parse(localStorage.getItem('cities')) || [],
     weatherData: null,
-  },
-  getters: {
   },
   mutations: {
     SET_WEATHER_DATA(state, data) {
       state.weatherData = data;
+    },
+    ADD_CITY(state, city) {
+      if (!state.cities.includes(city)) {
+        state.cities.push(city);
+        localStorage.setItem('cities', JSON.stringify(state.cities));
+      }
+    },
+    REMOVE_CITY(state, index) {
+      state.cities.splice(index, 1);
+      localStorage.setItem('cities', JSON.stringify(state.cities));
+    },
+    REORDER_CITIES(state, { newIndex, oldIndex }) {
+      const [movedCity] = state.cities.splice(oldIndex, 1);
+      state.cities.splice(newIndex, 0, movedCity);
+      localStorage.setItem('cities', JSON.stringify(state.cities));
     },
   },
   actions: {
@@ -23,5 +37,24 @@ export default createStore({
         console.error('Error fetching weather data:', error);
       }
     },
+    async initWeatherData({ commit, dispatch }) {
+      try {
+        const response = await axios.get('https://ipapi.co/json/');
+        const userCity = response.data.city;
+        commit('ADD_CITY', userCity);
+        await dispatch('fetchWeatherData', { city: userCity });
+      } catch (error) {
+        console.error('Error determining user location:', error);
+      }
+    },
+    addCity({ commit }, city) {
+      commit('ADD_CITY', city);
+    },
+    removeCity({ commit }, index) {
+      commit('REMOVE_CITY', index);
+    },
+    reorderCities({ commit }, { newIndex, oldIndex }) {
+      commit('REORDER_CITIES', { newIndex, oldIndex });
+    },
   },
-})
+});

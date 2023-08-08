@@ -39,37 +39,34 @@
         </div>
       </div>
     </div>
-    <div class="content-Settings" v-else>
-
-    </div>
+    <Settings :city-push-array="this.city" @close-settings="closeSettingsHandler" v-else/>
   </div>
   <!--Card-->
 </template>
 
 
 <script>
-import {defineComponent} from 'vue';
+import Settings from '@/components/Settings.vue'
+import { defineComponent, watch } from 'vue';
 import {mapState, mapActions} from 'vuex';
-import axios from "axios";
 
 export default defineComponent({
+  components:{Settings},
   data() {
     return {
+      city: '',
       settings: false,
     }
   },
-  async created() {
-    try {
-      const response = await axios.get('https://ipapi.co/json/');
-      const userCity = response.data.city;
-      this.city = userCity;
-      this.fetchWeatherForCity(userCity);
-    } catch (error) {
-      console.error('Error determining user location:', error);
+  created() {
+    if (this.cities.length > 0) {
+      this.fetchWeatherForCity(this.cities[0]);
+    } else {
+      this.initWeatherData();
     }
   },
   computed: {
-    ...mapState(['weatherData']),
+    ...mapState(['weatherData', 'cities']),
     arrowRotation() {
       if (this.$store.state.weatherData && this.$store.state.weatherData.wind) {
         const windDeg = this.$store.state.weatherData.wind.deg;
@@ -103,11 +100,23 @@ export default defineComponent({
     }
   },
   methods: {
-    ...mapActions(['fetchWeatherData']),
-    fetchWeatherForCity(city) {
-      this.fetchWeatherData({city});
+    ...mapActions(['fetchWeatherData', 'initWeatherData']),
+    closeSettingsHandler() {
+      this.settings = false;
     },
-  }
+    fetchWeatherForCity(city) {
+      this.fetchWeatherData({ city });
+    },
+  },
+  watch: {
+    cities: {
+      handler(cities) {
+        localStorage.setItem('cities', JSON.stringify(cities));
+        this.fetchWeatherForCity(this.cities[0])
+      },
+      deep: true,
+    },
+  },
 });
 </script>
 
