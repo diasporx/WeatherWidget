@@ -4,7 +4,8 @@
     <div class="content-No-Settings" v-if="!this.settings">
       <div class="headerWidget d-flex align-items-center justify-content-between">
         <span class="cityName">{{ weatherData.name }}, {{ weatherData.sys.country }}</span>
-        <button @click="this.settings = !this.settings" class="ico__Settings d-flex align-items-center justify-content-center"><img
+        <button @click="this.settings = !this.settings"
+                class="ico__Settings d-flex align-items-center justify-content-center"><img
             src='@/assets/icons/settings.svg' alt="settings"></button>
       </div>
       <div class="contentWidgetWeather d-flex align-items-center justify-content-start">
@@ -16,151 +17,56 @@
         </p>
       </div>
       <div class="content-columns d-flex justify-content-between">
-        <div class="d-flex flex-column">
+        <div class="d-flex mx-1 flex-column">
           <div class="group-stat mb-2 d-flex align-items-center">
-            <img class="ico__ArrowWind" src='@/assets/icons/arrow.png' :style="{ transform: `rotate(${arrowRotation}deg)` }" alt="arrow-wind">
-            <span class="light-color fw-normal nowrap ms-2">{{weatherData.wind.speed}}m/s {{ windDirection }}</span>
+            <img class="ico__ArrowWind" src='@/assets/icons/arrow.png'
+                 :style="{ transform: `rotate(${weatherData.wind.deg}deg)` }" alt="arrow-wind">
+            <span class="light-color fw-normal nowrap ms-2">{{ weatherData.wind.speed }}m/s {{ degToCompass(weatherData.wind.deg) }}</span>
           </div>
           <div class="group-stat mb-2 d-flex align-items-center">
-            <span class="light-color fw-normal nowrap">Humidity: {{weatherData.main.humidity}}%</span>
+            <span class="light-color fw-normal nowrap">Humidity: {{ weatherData.main.humidity }}%</span>
           </div>
           <div class="group-stat d-flex align-items-center">
-            <span class="light-color fw-normal nowrap">Visibility: {{Math.round(weatherData.visibility / 1000).toFixed(1)}}km</span>
+            <span
+                class="light-color fw-normal nowrap">Visibility: {{ Math.round(weatherData.visibility / 1000).toFixed(1) }}km</span>
           </div>
         </div>
-        <div class="d-flex flex-column">
+        <div class="d-flex mx-1 flex-column">
           <div class="group-stat mb-2 d-flex align-items-center">
             <img class="ico__pressure" src='@/assets/icons/pressure-gauge.png' alt="pressure-gauge">
-            <span class="light-color fw-normal ms-2 nowrap">{{weatherData.main.pressure}}hPa</span>
+            <span class="light-color fw-normal ms-2 nowrap">{{ weatherData.main.pressure }}hPa</span>
           </div>
           <div class="group-stat mb-2 d-flex align-items-center">
-            <span class="light-color fw-normal nowrap">Dew point: {{weatherData.main.temp_min}}℃</span>
+            <span class="light-color fw-normal nowrap">Dew point: {{ weatherData.main.temp_min }}℃</span>
           </div>
         </div>
       </div>
     </div>
-    <Settings :city-push-array="this.city" @close-settings="closeSettingsHandler" v-else/>
+
+    <Settings :city-push-array="this.city" v-else @close="settings = false"/>
+
   </div>
   <!--Card-->
 </template>
 
 
 <script>
-import Settings from '@/components/Settings.vue'
-import {defineComponent} from 'vue';
-import {mapActions, mapState} from 'vuex';
+import WeatherWidgetMixin from "@/components/__include/WeatherWidgetMixin.vue";
 
-export default defineComponent({
-  components:{Settings},
-  data() {
-    return {
-      city: '',
-      settings: false,
-    }
-  },
-  created() {
-    if (this.cities.length > 0) {
-      this.fetchWeatherForCity(this.cities[0]);
-    } else {
-      this.initWeatherData();
-    }
-  },
-  computed: {
-    ...mapState(['weatherData', 'cities']),
-    windDirection() {
-      if (this.$store.state.weatherData && this.$store.state.weatherData.wind) {
-        const degrees = this.$store.state.weatherData.wind.deg;
-        return this.degToCompass(degrees);
-      }
-      return '';
-    },
-    arrowRotation() {
-      if (this.$store.state.weatherData && this.$store.state.weatherData.wind) {
-        const windDeg = this.$store.state.weatherData.wind.deg;
-        return windDeg;
-      }
-      return 0;
-    },
-    weatherIconPath() {
-      const weatherData = this.$store.state.weatherData;
-      if (weatherData) {
-        const weatherConditions = weatherData.weather[0].main;
-        const iconType = this.getIconTypeForCity(weatherData.timezone);
-        switch (weatherConditions) {
-          case 'Clouds':
-            return require('@/assets/weather-images/cloudy.svg');
-          case 'Clear':
-            return require(`@/assets/weather-images/${iconType}.svg`);
-          case 'Haze':
-            return require('@/assets/weather-images/haze.svg');
-          case 'Thunderstorm':
-            return require('@/assets/weather-images/thunder.svg');
-          case 'Rain':
-            return require('@/assets/weather-images/rainy.svg');
-          case 'Drizzle':
-            return require('@/assets/weather-images/drizzle.svg');
-          case 'Snow':
-            return require('@/assets/weather-images/snowy.svg');
-          case 'Smoke':
-            return require('@/assets/weather-images/smoke.svg');
-          case 'Fog':
-            return require('@/assets/weather-images/fog.svg');
-          case 'Hail':
-            return require('@/assets/weather-images/hail.svg');
-          default:
-            return require(`@/assets/weather-images/cloudy-${iconType}.svg`);
-        }
-      } else {
-        return require(`@/assets/weather-images/cloudy-day.svg`);
-      }
-    }
-  },
-  methods: {
-    ...mapActions(['fetchWeatherData', 'initWeatherData']),
-    getCurrentTimeForCity(cityTimezoneOffset) {
-      const now = new Date();
-      const utcTime = new Date(now.getTime() + now.getTimezoneOffset() * 60000);
-      return new Date(utcTime.getTime() + cityTimezoneOffset * 1000);
-    },
-    getIconTypeForCity(cityTimezoneOffset) {
-      const hour = this.getCurrentTimeForCity(cityTimezoneOffset).getHours();
-      if (hour > 18 || hour < 6) {
-        return 'night';
-      } else {
-        return 'day';
-      }
-    },
-    async fetchWeatherForCity(city) {
-      await this.fetchWeatherData({city});
-    },
-    degToCompass(degrees) {
-      const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
-      const index = Math.round((degrees % 360) / 45);
-      return directions[(index % 8)];
-    },
-    closeSettingsHandler() {
-      this.settings = false;
-    }
-  },
-  watch: {
-    cities: {
-      handler(cities) {
-        localStorage.setItem('cities', JSON.stringify(cities));
-        this.fetchWeatherForCity(this.cities[0])
-      },
-      deep: true,
-    },
-  },
-});
+export default {
+  name: 'WeatherWidget',
+  mixins: [WeatherWidgetMixin]
+}
 </script>
 
 <style scoped lang="scss">
 .light-color {
   color: #1f1f1f
 }
+
 .weatherCard {
   background: #fff;
-  width: 300px;
+  width: 330px;
   border-radius: 7px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   padding: 20px;
@@ -187,7 +93,6 @@ export default defineComponent({
   .contentWidgetWeather {
     span.Temperature {
       font-size: 48px;
-      //margin-left: -17px;
       font-weight: 600;
     }
 
@@ -197,6 +102,11 @@ export default defineComponent({
   }
 
   .content-columns {
+    .group-stat {
+      border-radius: 6px;
+      background: #eee;
+      padding: 5px;
+    }
     .ico__ArrowWind, .ico__pressure {
       width: 20px;
     }

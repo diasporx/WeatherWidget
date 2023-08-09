@@ -1,96 +1,126 @@
 <template>
-  <div class="content-Settings-block d-flex flex-column justify-content-center">
+  <div class="content-Settings-block position-relative d-flex flex-column justify-content-center">
+    <transition name="fade">
+      <div class="err-message position-absolute" v-if="temporaryErr !== ''">
+        <p class="mb-0">{{ temporaryErr }}</p>
+      </div>
+    </transition>
     <div class="header-settings position-relative d-flex align-items-center justify-content-between mb-3">
-      <p class="error" v-if="this.err !== ''">{{ err }}</p>
       <span class="Title">Settings</span>
-      <button @click="this.$emit('close-settings')" class="ico__Close"><img src='@/assets/icons/close.svg' alt="close"></button>
+      <button @click="this.$emit('close')" class="ico__Close"><img src='@/assets/icons/close.svg' alt="close">
+      </button>
     </div>
-    <draggable class="drag-cities mb-1" v-model="cities" :item-key="getKey" v-if="cities.length > 0" @end="onDragEnd">
-      <div class="block-city d-flex align-items-center justify-content-between p-2 mb-2" v-for="(city, index) in cities" :key="getKey(city)">
-        <span class="handle">☰</span>
-        <span class="fw-bold">{{ city }}</span>
-        <a class="d-flex align-items-center" href="#" @click.prevent="removeCity(index)"><img class="Delete__Ico" src='@/assets/icons/delete.png' alt="delete"></a>
+    <div class="content-drag">
+      <draggable
+          tag="transition-group"
+          class="drag-cities mb-1"
+          v-model="cities"
+          :item-key="getKey"
+          v-if="cities.length > 0"
+          v-bind="dragOptions"
+          @start="drag = true"
+          @end="onDragEnd"
+      >
+        <div
+            class="block-city d-flex align-items-center justify-content-between p-2 mb-2"
+            v-for="(city, index) in cities" :key="city.id">
+          <span class="handle">☰</span>
+          <span class="fw-bold">{{ city }}</span>
+          <a class="d-flex align-items-center" href="#" @click.prevent="removeCity(index)">
+            <img class="Delete__Ico" src='@/assets/icons/delete.png' alt="delete">
+          </a>
+        </div>
+      </draggable>
+    </div>
+    <div class="footer-settings d-flex align-items-center">
+      <div class="input-group input-group-sm">
+        <div class="input-group-prepend">
+          <button class="btn btn-outline-secondary me-2" type="button" @click.prevent="addCityToStore(newCity)">Add</button>
+        </div>
+        <input v-model="newCity" type="text" class="form-control" placeholder="Add new city"
+               aria-describedby="Add new city">
       </div>
-    </draggable>
-    <div class="input-group input-group-sm mb-3">
-      <div class="input-group-prepend">
-        <button class="btn btn-outline-secondary me-2" type="button" @click.prevent="addCity(newCity)">Add</button>
-      </div>
-      <input v-model="newCity" type="text" class="form-control" placeholder="Add new city" aria-describedby="Add new city">
     </div>
   </div>
 </template>
 
 <script>
-import { defineComponent } from 'vue';
-import { VueDraggableNext } from 'vue-draggable-next'
-import { mapState, mapActions } from 'vuex';
+import SettingsMixin from "@/components/__include/SettingsMixin.vue";
 
-export default defineComponent({
-  components: {
-    draggable: VueDraggableNext,
-  },
-  props:{
-    cityPushArray: String
-  },
-  data() {
-    return {
-      newCity: '',
-      err: ''
-    };
-  },
-  computed: {
-    ...mapState(['cities']),
-  },
-  beforeMount() {
-    this.addCityToStore(this.cityPushArray);
-  },
-  methods: {
-    ...mapActions(['addCity', 'removeCity', 'reorderCities']),
-    onDragEnd(event) {
-      this.reorderCities({ newIndex: event.newIndex, oldIndex: event.oldIndex });
-    },
-    addCityToStore(city) {
-      if (this.newCity.trim() !== '') {
-        this.addCity(city).then((res)=> {
-          if(!res) {
-            this.err = 'City already exists in the list.';
-          }
-        });
-        this.newCity = '';
-      }
-    },
-    getKey(item) {
-      return item.id;
-    },
-  },
-});
+export default {
+  name: 'Settings',
+  mixins: [SettingsMixin]
+}
 </script>
 
 <style scoped lang="scss">
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.5s ease-in-out;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+
 .Title {
   font-weight: 600;
 }
-.header-settings {
-  p.error {
 
+.err-message {
+  top: -60px;
+  width: 100%;
+  background: #ff6767;
+  padding: 1px 15px;
+  border-radius: 3px;
+  p {
+    font-weight: 600;
   }
 }
+
 .content-Settings-block {
-  .drag-cities {
-    .block-city {
-      background: #bbbbbb;
+  .content-drag {
+    height: 244.5px;
+    overflow: auto;
+    margin-bottom: 48.5px;
+
+    .drag-cities {
+      transition: all .3s ease-in-out;
+
+      .block-city {
+        cursor: grab;
+        transition: background-color 0.3s ease;
+        background: #e1e1e1;
+        border-radius: 5px;
+
+        &:active {
+          cursor: grabbing;
+          background-color: #f0f0f0;
+        }
+        a {
+          transition: all .3s ease-in-out;
+          &:hover {
+            opacity: .7;
+          }
+        }
+      }
     }
   }
+
+  .footer-settings {
+    position: absolute;
+    width: 100%;
+    bottom: 0;
+    left: 0;
+    background: #fff;
+  }
 }
+
 .ico__Close {
   transition: all .3s ease;
-
   img {
     width: 20px;
     height: 20px;
   }
-
   &:hover {
     opacity: .7;
   }
