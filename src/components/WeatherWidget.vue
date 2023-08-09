@@ -47,8 +47,8 @@
 
 <script>
 import Settings from '@/components/Settings.vue'
-import { defineComponent } from 'vue';
-import {mapState, mapActions} from 'vuex';
+import {defineComponent} from 'vue';
+import {mapActions, mapState} from 'vuex';
 
 export default defineComponent({
   components:{Settings},
@@ -85,11 +85,12 @@ export default defineComponent({
       const weatherData = this.$store.state.weatherData;
       if (weatherData) {
         const weatherConditions = weatherData.weather[0].main;
+        const iconType = this.getIconTypeForCity(weatherData.timezone);
         switch (weatherConditions) {
           case 'Clouds':
             return require('@/assets/weather-images/cloudy.svg');
           case 'Clear':
-            return require('@/assets/weather-images/day.svg');
+            return require(`@/assets/weather-images/${iconType}.svg`);
           case 'Haze':
             return require('@/assets/weather-images/haze.svg');
           case 'Thunderstorm':
@@ -107,15 +108,31 @@ export default defineComponent({
           case 'Hail':
             return require('@/assets/weather-images/hail.svg');
           default:
-            return require('@/assets/weather-images/cloudy-day.svg');
+            return require(`@/assets/weather-images/cloudy-${iconType}.svg`);
         }
       } else {
-        return require('@/assets/weather-images/cloudy-day.svg');
+        return require(`@/assets/weather-images/cloudy-day.svg`);
       }
     }
   },
   methods: {
     ...mapActions(['fetchWeatherData', 'initWeatherData']),
+    getCurrentTimeForCity(cityTimezoneOffset) {
+      const now = new Date();
+      const utcTime = new Date(now.getTime() + now.getTimezoneOffset() * 60000);
+      return new Date(utcTime.getTime() + cityTimezoneOffset * 1000);
+    },
+    getIconTypeForCity(cityTimezoneOffset) {
+      const hour = this.getCurrentTimeForCity(cityTimezoneOffset).getHours();
+      if (hour > 18 || hour < 6) {
+        return 'night';
+      } else {
+        return 'day';
+      }
+    },
+    async fetchWeatherForCity(city) {
+      await this.fetchWeatherData({city});
+    },
     degToCompass(degrees) {
       const directions = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
       const index = Math.round((degrees % 360) / 45);
@@ -123,10 +140,7 @@ export default defineComponent({
     },
     closeSettingsHandler() {
       this.settings = false;
-    },
-    fetchWeatherForCity(city) {
-      this.fetchWeatherData({ city });
-    },
+    }
   },
   watch: {
     cities: {

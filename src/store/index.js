@@ -4,7 +4,7 @@ import axios from 'axios';
 export default createStore({
   state: {
     cities: JSON.parse(localStorage.getItem('cities')) || [],
-    weatherData: null,
+    weatherData: null
   },
   mutations: {
     SET_WEATHER_DATA(state, data) {
