@@ -19,7 +19,7 @@ export default createStore({
         },
         ADD_CITY(state, city) {
             if (!state.cities.includes(city)) {
-                state.cities.push(city);
+                state.cities.unshift(city);
                 localStorage.setItem('cities', JSON.stringify(state.cities));
             }
         },

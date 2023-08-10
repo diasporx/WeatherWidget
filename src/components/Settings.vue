@@ -79,7 +79,7 @@ export default {
 
 .content-Settings-block {
   .content-drag {
-    height: 244.5px;
+    height: 226px;
     overflow: auto;
     margin-bottom: 48.5px;
 
@@ -91,6 +91,10 @@ export default {
         transition: background-color 0.3s ease;
         background: #e1e1e1;
         border-radius: 5px;
+
+        &:nth-child(1) {
+          background: #55f229;
+        }
 
         &:active {
           cursor: grabbing;
